@@ -222,16 +222,18 @@ public class VideoReducer extends CordovaPlugin {
                                     return;
                                 }
 
+                                if (deleteInputFile) {
+                                    inFile.delete();
+                                }
+
                                 // make the gallery display the new file if saving to library
                                 if (saveToLibrary) {
                                     Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+
                                     scanIntent.setData(Uri.fromFile(inFile));
                                     scanIntent.setData(Uri.fromFile(outFile));
-                                    appContext.sendBroadcast(scanIntent);
-                                }
 
-                                if (deleteInputFile) {
-                                    inFile.delete();
+                                    appContext.sendBroadcast(scanIntent);
                                 }
 
                                 callback.success(outputFilePath);
