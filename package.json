@@ -1,0 +1,37 @@
+{
+  "name": "cordova-plugin-video-reducer",
+  "version": "1.0.0",
+  "description": "Cordova Video Reducer Plugin",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "cordova": {
+    "id": "cordova-plugin-video-reducer",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "keywords": [
+    "cordova",
+    "video",
+    "editing",
+    "editor",
+    "cordova",
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dragermrb/cordova-plugin-video-reducer.git"
+  },
+  "contributors": [
+  ],
+  "author": "Manuel Rodríguez",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dragermrb/cordova-plugin-video-reducer/issues"
+  },
+  "homepage": "https://github.com/dragermrb/cordova-plugin-video-reducer#readme"
+}
