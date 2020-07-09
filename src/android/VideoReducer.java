@@ -128,11 +128,9 @@ public class VideoReducer extends CordovaPlugin {
         );
 
         final boolean deleteInputFile = options.optBoolean("deleteInputFile", false);
-        final int width = options.optInt("width", 0);
-        final int height = options.optInt("height", 0);
-        final int fps = options.optInt("fps", 24);
-        final int videoBitrate = options.optInt("videoBitrate", 1000000); // default to 1 megabit
-        final long videoDuration = options.optLong("duration", 0) * 1000 * 1000;
+
+
+        final long videoDuration = options.optLong("duration", 30) * 1000 * 1000;
 
         Log.d(TAG, "videoSrcPath: " + videoSrcPath);
 
