@@ -30,7 +30,15 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Log;
 
-import net.ypresto.androidtranscoder.MediaTranscoder;
+import com.otaliastudios.transcoder.Transcoder;
+import com.otaliastudios.transcoder.TranscoderListener;
+import com.otaliastudios.transcoder.source.DataSource;
+import com.otaliastudios.transcoder.source.ClipDataSource;
+import com.otaliastudios.transcoder.source.FileDescriptorDataSource;
+import com.otaliastudios.transcoder.strategy.DefaultAudioStrategy;
+import com.otaliastudios.transcoder.strategy.DefaultVideoStrategy;
+import com.otaliastudios.transcoder.strategy.DefaultVideoStrategies;
+import com.otaliastudios.transcoder.validator.WriteVideoValidator;
 
 /**
  * VideoReducer plugin for Android
@@ -172,75 +180,75 @@ public class VideoReducer extends CordovaPlugin {
 
                 try {
 
-                    FileInputStream fin = new FileInputStream(inFile);
+                    FileInputStream fileInputStream = new FileInputStream(inFile);
 
-                    MediaTranscoder.Listener listener = new MediaTranscoder.Listener() {
-                        @Override
-                        public void onTranscodeProgress(double progress) {
-                            Log.d(TAG, "transcode running " + progress);
+                    DataSource clip = new ClipDataSource(
+                        new FileDescriptorDataSource(fileInputStream.getFD()),
+                        videoDuration // 30 * 1000 * 1000
+                    );
 
-                            JSONObject jsonObj = new JSONObject();
-                            try {
-                                jsonObj.put("progress", progress);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
+                    DefaultAudioStrategy audioStrategy = DefaultAudioStrategy.builder()
+                        .channels(DefaultAudioStrategy.CHANNELS_AS_INPUT)
+                        .sampleRate(DefaultAudioStrategy.SAMPLE_RATE_AS_INPUT)
+                        .bitRate(DefaultAudioStrategy.BITRATE_UNKNOWN)
+                        .build();
+
+                    DefaultVideoStrategy videoStrategy = DefaultVideoStrategies.for720x1280();
+
+                    Transcoder.into(outputFilePath)
+                        .addDataSource(clip)
+                        .setAudioTrackStrategy(audioStrategy)
+                        .setVideoTrackStrategy(videoStrategy)
+                        .setValidator(new WriteVideoValidator())
+                        .setListener(new TranscoderListener() {
+                            public void onTranscodeProgress(double progress) {
+                                Log.d(TAG, "transcode running " + progress);
+
+                                JSONObject jsonObj = new JSONObject();
+                                try {
+                                    jsonObj.put("progress", progress);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                                PluginResult progressResult = new PluginResult(PluginResult.Status.OK, jsonObj);
+                                progressResult.setKeepCallback(true);
+                                callback.sendPluginResult(progressResult);
                             }
 
-                            PluginResult progressResult = new PluginResult(PluginResult.Status.OK, jsonObj);
-                            progressResult.setKeepCallback(true);
-                            callback.sendPluginResult(progressResult);
-                        }
+                            public void onTranscodeCompleted(int successCode) {
+                                File outFile = new File(outputFilePath);
+                                if (!outFile.exists()) {
+                                    Log.d(TAG, "outputFile doesn't exist!");
+                                    callback.error("an error ocurred during transcoding");
+                                    return;
+                                }
 
-                        @Override
-                        public void onTranscodeCompleted() {
+                                // make the gallery display the new file if saving to library
+                                if (saveToLibrary) {
+                                    Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                                    scanIntent.setData(Uri.fromFile(inFile));
+                                    scanIntent.setData(Uri.fromFile(outFile));
+                                    appContext.sendBroadcast(scanIntent);
+                                }
 
-                            File outFile = new File(outputFilePath);
-                            if (!outFile.exists()) {
-                                Log.d(TAG, "outputFile doesn't exist!");
-                                callback.error("an error ocurred during transcoding");
-                                return;
+                                if (deleteInputFile) {
+                                    inFile.delete();
+                                }
+
+                                callback.success(outputFilePath);
                             }
 
-                            // make the gallery display the new file if saving to library
-                            if (saveToLibrary) {
-                                Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                                scanIntent.setData(Uri.fromFile(inFile));
-                                scanIntent.setData(Uri.fromFile(outFile));
-                                appContext.sendBroadcast(scanIntent);
+                            public void onTranscodeCanceled() {
+                                callback.error("transcode canceled");
+                                Log.d(TAG, "transcode canceled");
+                                }
+
+                            public void onTranscodeFailed(Throwable exception) {
+                                callback.error(exception.toString());
+                                Log.d(TAG, "transcode exception", exception);
                             }
-
-                            if (deleteInputFile) {
-                                inFile.delete();
-                            }
-
-                            callback.success(outputFilePath);
-                        }
-
-                        @Override
-                        public void onTranscodeCanceled() {
-                            callback.error("transcode canceled");
-                            Log.d(TAG, "transcode canceled");
-                        }
-
-                        @Override
-                        public void onTranscodeFailed(Exception exception) {
-                            callback.error(exception.toString());
-                            Log.d(TAG, "transcode exception", exception);
-                        }
-                    };
-
-                    MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-                    mmr.setDataSource(videoSrcPath);
-
-                    String orientation;
-                    String mmrOrientation = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
-                    Log.d(TAG, "mmrOrientation: " + mmrOrientation); // 0, 90, 180, or 270
-
-                    float videoWidth = Float.parseFloat(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
-                    float videoHeight = Float.parseFloat(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
-
-                    MediaTranscoder.getInstance().transcodeVideo(fin.getFD(), outputFilePath,
-                            new CustomAndroidFormatStrategy(videoBitrate, fps, width, height), listener, videoDuration);
+                        }).transcode();
 
                 } catch (Throwable e) {
                     Log.d(TAG, "transcode exception ", e);
