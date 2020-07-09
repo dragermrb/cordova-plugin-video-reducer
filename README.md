@@ -6,7 +6,7 @@ This is a cordova plugin to reduce video size.
 * Creating thumbnails from a video file (now at a specific time in the video)
 * Getting info on a video - width, height, orientation, duration, size, & bitrate.
 
-Based on awesome work of [cordova-plugin-video-editor] (https://github.com/jbavari/cordova-plugin-video-editor) and  [Transcoder](https://github.com/natario1/Transcoder)
+Based on awesome work of [cordova-plugin-video-editor](https://github.com/jbavari/cordova-plugin-video-editor) and  [Transcoder](https://github.com/natario1/Transcoder)
 
 
 ## Installation
