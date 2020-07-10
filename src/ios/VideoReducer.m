@@ -25,16 +25,7 @@
  *
  * fileUri              - path to input video
  * outputFileName       - output file name
- * quality              - transcode quality
- * outputFileType       - output file type
  * saveToLibrary        - save to gallery
- * maintainAspectRatio  - make the output aspect ratio match the input video
- * width                - width for the output video
- * height               - height for the output video
- * videoBitrate         - video bitrate for the output video in bits
- * audioChannels        - number of audio channels for the output video
- * audioSampleRate      - sample rate for the audio (samples per second)
- * audioBitrate         - audio bitrate for the output video in bits
  *
  * RESPONSE
  * ========
@@ -55,17 +46,17 @@
     NSString *inputFilePath = [options objectForKey:@"fileUri"];
     NSURL *inputFileURL = [self getURLFromFilePath:inputFilePath];
     NSString *videoFileName = [options objectForKey:@"outputFileName"];
-    CDVOutputFileType outputFileType = ([options objectForKey:@"outputFileType"]) ? [[options objectForKey:@"outputFileType"] intValue] : MPEG4;
-    BOOL optimizeForNetworkUse = ([options objectForKey:@"optimizeForNetworkUse"]) ? [[options objectForKey:@"optimizeForNetworkUse"] intValue] : NO;
     BOOL saveToPhotoAlbum = [options objectForKey:@"saveToLibrary"] ? [[options objectForKey:@"saveToLibrary"] boolValue] : YES;
     //float videoDuration = [[options objectForKey:@"duration"] floatValue];
-    BOOL maintainAspectRatio = [options objectForKey:@"maintainAspectRatio"] ? [[options objectForKey:@"maintainAspectRatio"] boolValue] : YES;
-    float width = [[options objectForKey:@"width"] floatValue];
-    float height = [[options objectForKey:@"height"] floatValue];
-    int videoBitrate = ([options objectForKey:@"videoBitrate"]) ? [[options objectForKey:@"videoBitrate"] intValue] : 1000000; // default to 1 megabit
-    int audioChannels = ([options objectForKey:@"audioChannels"]) ? [[options objectForKey:@"audioChannels"] intValue] : 2;
-    int audioSampleRate = ([options objectForKey:@"audioSampleRate"]) ? [[options objectForKey:@"audioSampleRate"] intValue] : 44100;
-    int audioBitrate = ([options objectForKey:@"audioBitrate"]) ? [[options objectForKey:@"audioBitrate"] intValue] : 128000; // default to 128 kilobits
+    CDVOutputFileType outputFileType = MPEG4;
+    BOOL optimizeForNetworkUse = YES;
+    BOOL maintainAspectRatio = YES;
+    float width = 1280;
+    float height = 720;
+    int videoBitrate = 2000000; // default to 2 megabit
+    int audioChannels = 2;
+    int audioSampleRate = 44100;
+    int audioBitrate = 128000; // default to 128 kilobits
 
     NSString *stringOutputFileType = Nil;
     NSString *outputExtension = Nil;
