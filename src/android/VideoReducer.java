@@ -94,11 +94,6 @@ public class VideoReducer extends CordovaPlugin {
      * outputFileName       - output file name
      * saveToLibrary        - save to gallery
      * deleteInputFile      - optionally remove input file
-     * width                - width for the output video
-     * height               - height for the output video
-     * fps                  - fps the video
-     * videoBitrate         - video bitrate for the output video in bits
-     * duration             - max video duration (in seconds?)
      *
      * RESPONSE
      * ========
@@ -128,9 +123,8 @@ public class VideoReducer extends CordovaPlugin {
         );
 
         final boolean deleteInputFile = options.optBoolean("deleteInputFile", false);
-
-
-        final long videoDuration = options.optLong("duration", 30) * 1000 * 1000;
+        final long videoDuration = options.optLong("duration", 0) * 1000 * 1000;
+        final String destFolder = options.optString("destFolder", "Movies");
 
         Log.d(TAG, "videoSrcPath: " + videoSrcPath);
 
@@ -152,11 +146,14 @@ public class VideoReducer extends CordovaPlugin {
 
         if (saveToLibrary) {
             mediaStorageDir = new File(
-                    Environment.getExternalStorageDirectory() + "/Movies",
-                    appName
+                Environment.getExternalStorageDirectory() + "/" + destFolder
             );
         } else {
-            mediaStorageDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + cordova.getActivity().getPackageName() + "/files/files/videos");
+            mediaStorageDir = new File(
+                Environment.getExternalStorageDirectory().getAbsolutePath() +
+                    "/Android/data/" + cordova.getActivity().getPackageName() +
+                    "/files/files/videos"
+            );
         }
 
         if (!mediaStorageDir.exists()) {
@@ -182,7 +179,7 @@ public class VideoReducer extends CordovaPlugin {
 
                     DataSource clip = new ClipDataSource(
                         new FileDescriptorDataSource(fileInputStream.getFD()),
-                        videoDuration // 30 * 1000 * 1000
+                        videoDuration
                     );
 
                     DefaultAudioStrategy audioStrategy = DefaultAudioStrategy.builder()
