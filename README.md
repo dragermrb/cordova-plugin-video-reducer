@@ -29,6 +29,7 @@ VideoReducer.transcodeVideo(
         outputFileName: 'output-name', // the file name for the transcoded video
         saveToLibrary: true, // optional, defaults to true
         deleteInputFile: false, // optional (android only), defaults to false
+        destFolder: '', // optional (android only), defaults to [EXTERNAL_STORAGE] + 'Movies'
         progress: function(info) {} // info will be a number from 0 to 100
     }
 );
